@@ -5,9 +5,9 @@ from fpdf import FPDF
 from datetime import datetime
 
 
-# --------------------------------------- Source #1 --------------------------------------- #
+# --------------------------------------- Source #1 : df_html_wars --> Israel wars  --------------------------------------- #
 
-# Read from source - Israel wars 
+# Read from source
 df_html_wars_orig = pd.read_html('https://en.wikipedia.org/wiki/List_of_wars_involving_Israel')
 
 # Extract relevant table from source
@@ -54,9 +54,9 @@ df_html_wars[['War Name', 'War Years']] = df_html_wars[['War Name', 'War Years']
 # df_html_wars.to_csv(r"E:\קריירה\הכנה 2024\פרוייקטים\analysis\app\Israel_Wars.csv", encoding='utf-8', index=False)
 
 
-# --------------------------------------- Source #2 --------------------------------------- #
+# --------------------------------------- Source #2 : df_csv --> Israel Wars duration --------------------------------------- #
 
-# Read from csv - Wars duration
+# Read from csv
 df_csv = pd.read_csv(r"E:\קריירה\הכנה 2024\פרוייקטים\analysis\app\sources\csv\Israel_Wars_Duration.csv",encoding='cp1252')
 
 # Get read of problematic characters in strings
@@ -65,10 +65,10 @@ df_csv = df_csv.replace('–', '-', regex=True)
 df_csv = df_csv.replace(r'[\u05B2\u00A0]', '', regex=True)
 
 
-# --------------------------------------- Source #3 --------------------------------------- #
+# --------------------------------------- Source #3 : df_html_demographics --> Israel Demographics --------------------------------------- #
 
 
-# Read from source - Israel Demographics
+# Read from source
 df_html_demographics_orig = pd.read_html('https://he.wikipedia.org/wiki/%D7%93%D7%9E%D7%95%D7%92%D7%A8%D7%A4%D7%99%D7%94_%D7%A9%D7%9C_%D7%99%D7%A9%D7%A8%D7%90%D7%9C')
 
 # Extract relevant table from source
@@ -89,10 +89,10 @@ df_html_demographics = pd.concat([pd.DataFrame([row_to_insert]), df_html_demogra
 
 # print(df_html_demographics)
 
-df_html_demographics.to_csv(r"E:\קריירה\הכנה 2024\פרוייקטים\analysis\app\df_html_demographics.csv", encoding='utf-8', index=False)
+# df_html_demographics.to_csv(r"E:\קריירה\הכנה 2024\פרוייקטים\analysis\app\df_html_demographics.csv", encoding='utf-8', index=False)
 
 
-# --------------------------------------- Join Source #1 + Source #2 --------------------------------------- #
+# --------------------------------------- Join Source #1 + Source #2 : df_combined --------------------------------------- #
 
 df_joined = pd.merge(df_html_wars,df_csv,left_on='War Name',right_on='War Name', how='outer')
 
@@ -181,11 +181,10 @@ df_combined['Duration time'] = df_combined['Duration Dates'].apply(lambda item :
 df_combined.to_csv(r"E:\קריירה\הכנה 2024\פרוייקטים\analysis\app\df_combined.csv", encoding='utf-8', index=False)
 
 
-
+# # ----------------------------------------------------------------------------------------------- #
 # # --------------------------------------- Analyze Sources --------------------------------------- #
 
 # # 1) Count wars per results - bar chart + pie chart # #
-
 
 # Group by 'Results' 
 df_combined_agg = df_combined['Results'].value_counts()
@@ -197,15 +196,15 @@ ax = df_combined_agg.plot(kind='bar')
 for i, count in enumerate(df_combined_agg):
     ax.text(i, count, str(count), ha='center', va='bottom')  # Annotate each bar with its count
 
-# plt.show()
+plt.show()
 
 # Pie chart with legend showing percentages
 plt.pie(df_combined_agg, labels=df_combined_agg.index, autopct='%1.1f%%') 
 plt.legend(df_combined_agg.index, title="Results")
 
-# plt.show()
+plt.show()
 
-# --------------------------------------
+# # --------------------------------------
 
 # # 5) Losses by wars # #
 
@@ -231,7 +230,7 @@ ax.set_title('Sum of IDF Forces Losses by War')
 # Add a dummy legend (if desired)
 ax.legend(['Total Losses'], title='Legend')
 
-# plt.show()
+plt.show()
 
 # Civilians
 # Group by 'Results' 
@@ -256,13 +255,15 @@ ax.set_title('Sum of Civilians Losses by War')
 # Add a dummy legend (if desired)
 ax.legend(['Total Losses'], title='Legend')
 
-# plt.show()
+plt.show()
 
 # both
 # Group by 'Results' 
 # Get rid of problematic characters in strings
 df_combined = df_combined.replace(r'[+,\u05B2\u00A0]', '', regex=True)
 df_combined['Civilians Losses'] = df_combined['Civilians Losses'].replace(r'[+,\u05B2\u00A0~]', '', regex=True)
+# Convert the column to string
+df_combined['Civilians Losses'] = df_combined['Civilians Losses'].astype(str)
 df_combined.loc[1,'Civilians Losses'] = df_combined.loc[1,'Civilians Losses'].replace('2-3','3')
 df_combined['IDF Forces Losses'] = df_combined['IDF Forces Losses'].apply(lambda item : int(item))
 df_combined['Civilians Losses'] = df_combined['Civilians Losses'].apply(lambda item : int(item))
@@ -285,10 +286,10 @@ ax.set_title('Sum of All Losses by War')
 # Add a dummy legend (if desired)
 ax.legend(['Total Losses'], title='Legend')
 
-# plt.show()
+plt.show()
 
 
-# --------------------------------------
+# # --------------------------------------
 
 # # 4) Wars per duration # #
 def dur_block(item):
@@ -321,11 +322,11 @@ ax.set_title('Sum of Wars by Duration')
 # Add a dummy legend (if desired)
 ax.legend(['count wars'], title='Legend')
 
-# plt.show()
+plt.show()
 
-# --------------------------------------
+# # --------------------------------------
 
-# # # 6) Wars per Prime Minister # #
+# # 6) Wars per Prime Minister # #
 # Count the number of each result per Prime Minister
 df_combined_agg = df_combined.groupby('Israeli Prime Minister')['Results'].value_counts().unstack().fillna(0)
 
@@ -347,18 +348,18 @@ for i, (index, row) in enumerate(df_combined_agg.iterrows()):
     # ax.text(i - 0.2, row['Total Wars'] + 0.5, f"Total: {int(row['Total Wars'])}", ha='center', va='bottom')
     ax.text(i + 0.2, row['Victory'] + 0.5, f"Victory: ({row['Victory %']:.1f}%)", ha='center', va='bottom')
 
-# # Set labels and title
-# ax.set_xlabel('Israeli Prime Minister')
-# ax.set_ylabel('Count')
-# ax.set_title('Count of Wars and Victories by Prime Minister')
+# Set labels and title
+ax.set_xlabel('Israeli Prime Minister')
+ax.set_ylabel('Count')
+ax.set_title('Count of Wars and Victories by Prime Minister')
 
-# # Show plot
-# plt.show()
+# Show plot
+plt.show()
 
 
-# --------------------------------------
+# # --------------------------------------
 
-# # # 2) Wars through the years # #
+# # 2) Wars through the years # #
 
 # add a column of start year
 df_combined['War Years'] = df_combined['War Years'].astype(str)
@@ -407,17 +408,41 @@ ax.set_title('Timeline of Wars')
 
 # Show the plot
 plt.tight_layout()
-# plt.show()
+
+plt.show()
 
 
-# --------------------------------------
+# # --------------------------------------
 
-# # # 3) Wars through the years # 
+# # 3) Wars through the years # 
 
-# Create DataFrames for each dataset
+# necessary DFs
 
-population_data = df_html_demographics[['Year','Population (K)']]
-losses_data = df_html_demographics[['Start Year','All Losses']]
+population_data = df_html_demographics
+
+# add columns
+df_combined['War Years'] = df_combined['War Years'].astype(str)
+df_combined['War Start Year'] = df_combined['War Years'].apply(lambda item : item.split("-")[0].replace(" ","")).astype(str).apply(lambda item : item.replace(".0","")).astype(int)
+
+# Get rid of problematic characters in strings
+df_combined = df_combined.replace(r'[+,\u05B2\u00A0]', '', regex=True)
+df_combined['Civilians Losses'] = df_combined['Civilians Losses'].replace(r'[+,\u05B2\u00A0~]', '', regex=True)
+# # Convert the column to string
+df_combined['Civilians Losses'] = df_combined['Civilians Losses'].astype(str)
+df_combined['Civilians Losses'] = df_combined['Civilians Losses'].replace('2-3','3').str.replace('.0','')
+df_combined['IDF Forces Losses'] = df_combined['IDF Forces Losses'].apply(lambda item : int(item))
+df_combined['Civilians Losses'] = df_combined['Civilians Losses'].apply(lambda item : int(item))
+df_combined['All Losses'] = df_combined['IDF Forces Losses'] + df_combined['Civilians Losses']
+
+# create new df that hold necessary data only - War Name & War Start Year
+losses_data  = df_combined[['War Start Year','All Losses']]
+
+# Sort the losses_data by 'War Start Year' in ascending order
+losses_data = losses_data.sort_values(by='War Start Year', ascending=True)
+
+print(population_data)
+print(losses_data)
+
 
 df_population = pd.DataFrame(population_data)
 df_losses = pd.DataFrame(losses_data)
@@ -433,7 +458,7 @@ ax1.tick_params(axis='y', labelcolor='blue')
 
 # Create a second y-axis for losses
 ax2 = ax1.twinx()
-ax2.plot(df_losses['Start Year'], df_losses['All Losses'], color='red', label='All Losses', linestyle='--')
+ax2.plot(df_losses['War Start Year'], df_losses['All Losses'], color='red', label='All Losses', linestyle='--')
 ax2.set_ylabel('All Losses', color='red')
 ax2.tick_params(axis='y', labelcolor='red')
 
