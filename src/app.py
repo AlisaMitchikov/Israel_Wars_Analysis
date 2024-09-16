@@ -1,13 +1,10 @@
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-
-# Assuming AppConfig is set up properly and contains sender_email and password
 from utils.app_config import AppConfig
 
 # Email account credentials
@@ -23,7 +20,7 @@ subject = 'PDF Report: Israel Wars Analysis'
 body = 'Please find attached the PDF report for the Israel Wars analysis.'
 
 # Path to the PDF file
-pdf_file_path = 'output.pdf'
+pdf_file_path = r'src\static\pdf\output.pdf'
 
 # Create the email
 msg = MIMEMultipart()
